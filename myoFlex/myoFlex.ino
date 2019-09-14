@@ -1,6 +1,7 @@
 //this code takes input from a myoelctric and toggles the hand between the contracted
 // and extended positions when there is a spike above a user-defined level
 // future projects will include running this code with low power 
+//jd is cool
 
 
 
