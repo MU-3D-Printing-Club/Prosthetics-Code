@@ -1,6 +1,6 @@
 //this code takes input from a myoelctric and toggles the hand between the contracted
 // and extended positions when there is a spike above a user-defined level
-// future projects will include running this code with low power 
+// future projects will include running this code with low power
 //jd is cool
 //jd is cooler
 
@@ -21,6 +21,7 @@ Servo pinky;
 #define middlePin 6
 #define ringPin 9
 #define pinkyPin 10
+#define buttonPin 0 //This is the pin the button is located(NEEDS TO BE CHANGED TO REFLECT THE ACTUAL LOCATION ON THE HARDWARE)
 
 
 float currentVoltage=0;   //this is where to store each read from the myo
@@ -28,33 +29,55 @@ float currentVoltage=0;   //this is where to store each read from the myo
 #define myoIn A1      //the pin where myo signal comes in
 
 bool contract=false;   //variable we will use to toggle action
+int buttonState = 0;  //variable for reading the pushButton status
 
 // THIS PART ONLY RUNS ONCE
 void setup() {
-Serial.begin(9600);     //starts up serial communication between arduino and computer
+  Serial.begin(9600);     //starts up serial communication between arduino and computer
   thumb.attach(thumbPin, min, max);    //defines where the servos are and their max/mins
   pointer.attach(pointerPin, min, max);
   middle.attach(middlePin, min, max);
   ring.attach(ringPin, min, max);
   pinky.attach(pinkyPin, min, max);
+
+  pinMode(buttonPin, INPUT);  //initializes buttonPin as an input
   Serial.println("Begin");    //prints a start message
   handPosition(max,max,max,max,max);       //makes the hand relax all of the way
 }
 
-// THIS PART OF THE CODE LOOPS CONTINIOUSLY 
+// THIS PART OF THE CODE LOOPS CONTINIOUSLY
 void loop() {
- currentVoltage = analogRead(myoIn);     //reads myoelectric input
- currentVoltage=currentVoltage/1023;      // converts from 0-1023 scale to 0-1 scale
- Serial.println(currentVoltage);        //puts it in the serial moniter
- if (contract==false && currentVoltage>threshold){      //if we see a spike and the hand is relaxed
- Serial.println("Contract!");     
-  handPosition(min,min,min,min,min);            //make it squeeze; see subfunction below loop body
-  contract=true;                                 //change the boolean
- }else if (contract==true && currentVoltage>threshold){   //if it is already contracted then make it relax
-  Serial.println("Extend!");
-  handPosition(max,max,max,max,max);
-  contract=false;
-}
+  buttonState = digitalRead(buttonPin);   //reads the state of the pushButton value
+  currentVoltage = analogRead(myoIn);     //reads myoelectric input
+  currentVoltage=currentVoltage/1023;      // converts from 0-1023 scale to 0-1 scale
+  Serial.println(currentVoltage);        //puts it in the serial moniter
+
+  if (contract==false && currentVoltage>threshold){      //if we see a spike and the hand is relaxed
+    Serial.println("Contract!");
+    handPosition(min,min,min,min,min);            //make it squeeze; see subfunction below loop body
+    contract=true;                                 //change the boolean
+  }else if (contract==true && currentVoltage>threshold){   //if it is already contracted then make it relax
+    Serial.println("Extend!");
+    handPosition(max,max,max,max,max);
+    contract=false;
+  }
+
+  if(buttonState == HIGH){
+    if (contract==false && currentVoltage>threshold){      //if we see a spike and the hand is relaxed
+      Serial.println("Contract!");
+      handPosition(min,min,min,min,min);            //make it squeeze; see subfunction below loop body
+      contract=true;                                 //change the boolean
+    }else if (contract==true && currentVoltage>threshold){   //if it is already contracted then make it relax
+      Serial.println("Extend!");
+      handPosition(max,max,max,max,max);
+      contract=false;
+    }
+  }
+  else{
+    Serial.println("The hand is now turned off");
+  }
+
+
 }
 
 void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pinkyPos){
