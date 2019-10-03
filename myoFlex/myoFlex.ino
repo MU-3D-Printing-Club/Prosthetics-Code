@@ -43,24 +43,25 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
 
 // THIS PART OF THE CODE LOOPS CONTINIOUSLY 
 void loop() {
- currentVoltage = analogRead(myoIn);     //reads myoelectric input
- currentVoltage=currentVoltage/1023;      // converts from 0-1023 scale to 0-1 scale
- Serial.println(currentVoltage);        //puts it in the serial moniter
- if (contract==false && currentVoltage>threshold){      //if we see a spike and the hand is relaxed
- Serial.println("Contract!");     
-  handPosition(min,min,min,min,min);            //make it squeeze; see subfunction below loop body
-  contract=true;                                 //change the boolean
- }else if (contract==true && currentVoltage>threshold){   //if it is already contracted then make it relax
-  Serial.println("Extend!");
-  handPosition(max,max,max,max,max);
-  contract=false;
-}
+   currentVoltage = analogRead(myoIn);     //reads myoelectric input
+   currentVoltage=currentVoltage/1023;      // converts from 0-1023 scale to 0-1 scale
+   Serial.println(currentVoltage);        //puts it in the serial moniter
+   if (contract==false && currentVoltage>threshold){      //if we see a spike and the hand is relaxed
+    Serial.println("Contract!");     
+    handPosition(min,min,min,min,min);            //make it squeeze; see subfunction below loop body
+    contract=true;                                 //change the boolean
+   }
+   else if (contract==true && currentVoltage>threshold){   //if it is already contracted then make it relax
+    Serial.println("Extend!");
+    handPosition(max,max,max,max,max);
+    contract=false;
+   }
 }
 
 void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pinkyPos){
   //function hand position takes in 5 integer inputs for each finger and moves the servos according to
   //each input. for the servos, maximum extension is 1000 and minimum (all the way in) is 2000.
-thumb.writeMicroseconds(thumbPos);   //this is a function from the servo.h library basically gives the pulse width
+  thumb.writeMicroseconds(thumbPos);   //this is a function from the servo.h library basically gives the pulse width
   pointer.writeMicroseconds(pointerPos);
   middle.writeMicroseconds(middlePos);
   ring.writeMicroseconds(ringPos);
