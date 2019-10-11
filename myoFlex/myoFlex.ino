@@ -20,7 +20,7 @@ int trigger 600 //change later with new function
 #define ringPin 9
 #define pinkyPin 10
  
-int state = 0;
+int state = 1;
 float currentVoltage=0;   //this is where to store each read from the myo
 #define threshold .4    //this is the percentage of the max read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
@@ -37,7 +37,6 @@ void setup() {
 Serial.begin(9600);     //starts up serial communication between arduino and computer
   Serial.println("Starting");       //makes the hand relax all of the way
   trigger = setTrigger();
-  state = 1;
 }
  
 // THIS PART OF THE CODE LOOPS CONTINIOUSLY
