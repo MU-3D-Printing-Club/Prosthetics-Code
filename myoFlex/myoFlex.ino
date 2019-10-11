@@ -12,6 +12,9 @@ Servo pinky;
  
 #define min 2000    //static integers of minimum and maximum servo extension
 #define max 1000
+
+//int min = 2000;
+//int max = 1000;
 int trigger = 600; //change later with new function
 
 #define thumbPin 3    //these are the PWM pins where servos are connected
@@ -45,20 +48,27 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
  
 // THIS PART OF THE CODE LOOPS CONTINIOUSLY
 void loop() {
+  Serial.println(analogRead(myoIn));
   if(check(currentVoltage = analogRead(myoIn))){
     state++;
-    state = state%5;
+    state = state%4;
+    Serial.print("state is ");
+    Serial.println(state);
     //Serial.println(currentVoltage);        //prints in the serial moniter
-    if(state == 1){
+    if(state == 0){
+      Serial.println("Open");
       handPosition(max,max,max,max,max);
     }
-    else if(state == 2){
+    else if(state == 1){
+      Serial.println("Point");
       handPosition(max,min,max,max,max);
     }
-    else if(state == 3){
+    else if(state == 2){
+      Serial.println("Pinch");
       handPosition(min,min,min,max,max);
     }
-    else if(state == 4){
+    else if(state == 3){
+      Serial.println("Fist");
       handPosition(min,min,min,min,min);
     }
     else {
@@ -71,18 +81,20 @@ int setTrigger(){
   float average = 0;
   int i, j;
   do{
+    average = 0;
     for(j = 1; j <= 3; j++){
-      Serial.println("Reading impulse ");
+      Serial.print("Reading impulse ");
       Serial.print(j);
-      Serial.print(" in the next 3 seconds");
+      Serial.println(" in the next 3 seconds");
       for(i = 3; i != 0; i--){
         Serial.println(i);
         delay(1000);
       }
       Serial.println("Reading");
       average = average + analogRead(myoIn);
+      Serial.println(average/3);
     }
-  } while(average < 300);
+  } while((average/3) < 200);
   return (int)(average/3);
 }
 
@@ -101,6 +113,7 @@ void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pink
   middle.writeMicroseconds(middlePos);
   ring.writeMicroseconds(ringPos);
   pinky.writeMicroseconds(pinkyPos);
+  Serial.println("changing");
   delay(1000);       //this is so the servos have time to get to their set position
   thumb.writeMicroseconds(thumb.readMicroseconds());
   pointer.writeMicroseconds(pointer.readMicroseconds());
