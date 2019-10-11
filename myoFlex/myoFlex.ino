@@ -12,7 +12,7 @@ Servo pinky;
  
 #define min 2000    //static integers of minimum and maximum servo extension
 #define max 1000
-int trigger 600 //change later with new function
+int trigger = 600; //change later with new function
 
 #define thumbPin 3    //these are the PWM pins where servos are connected
 #define pointerPin 5
@@ -26,7 +26,7 @@ float currentVoltage=0;   //this is where to store each read from the myo
 #define myoIn A1      //the pin where myo signal comes in
 
 int setTrigger();
-int trigger(int);
+int check(int);
 int setOpen();
 int setPoint();
 int setPinch();
@@ -41,7 +41,7 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
  
 // THIS PART OF THE CODE LOOPS CONTINIOUSLY
 void loop() {
-  if(trigger(currentVoltage = analogRead(myoIn))){
+  if(check(currentVoltage = analogRead(myoIn))){
     state++;
     state = state%5;
     //Serial.println(currentVoltage);        //prints in the serial moniter
@@ -83,10 +83,12 @@ int setTrigger(){
   float average = 0;
   do{
     for(int j = 1; j <= 3; j++){
-      Serial.println("Reading impulse %d in next 3 seconds", j);
+      Serial.println("Reading impulse ");
+      Serial.print(j);
+      Serial.print(" in the next 3 seconds");
       for(int i = 3; i != 0; i--){
         delay(1000);
-        Serial.println("%d", i);
+        Serial.println(i);
       }
       average = average + analogRead(myoIn);
     }
@@ -94,7 +96,7 @@ int setTrigger(){
   return (int)(average/3);
 }
 
-int trigger(int voltage){
+int check(int voltage){
   if(voltage > trigger){
     return 1;
   }
