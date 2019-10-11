@@ -45,7 +45,7 @@ void loop() {
 if(trigger(currentVoltage = analogRead(myoIn))){
   state++;
   state = state%5;
-  //Serial.println(currentVoltage);        //puts it in the serial moniter
+  //Serial.println(currentVoltage);        //prints in the serial moniter
   if(state == 1){
     if(!setOpen()){
         Serial.println("Failed");
@@ -85,9 +85,15 @@ if(trigger(currentVoltage = analogRead(myoIn))){
 int setTrigger(){
   float average = 0;
 
-  //build collection here
-
-  return (int)average;
+  for(int j = 1; j <= 3; j++){
+    Serial.println("Reading impulse %d in next 3 seconds", j);
+    for(int i = 3; i != 0; i--){
+      delay(1000);
+      Serial.println("%d", i);
+    }
+    average = average + analogRead(myoIn);
+  }
+  return (int)(average/3);
 }
 
 int trigger(int voltage){
