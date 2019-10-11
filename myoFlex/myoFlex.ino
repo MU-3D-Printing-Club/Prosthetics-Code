@@ -25,13 +25,8 @@ float currentVoltage=0;   //this is where to store each read from the myo
 #define threshold .4    //this is the percentage of the max read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
 
-
 int setTrigger();
 int check(int);
-int setOpen();
-int setPoint();
-int setPinch();
-int setFist();
 void handPosition(int,int,int,int,int);
  
 // THIS PART ONLY RUNS ONCE
@@ -44,7 +39,7 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
   ring.attach(ringPin, min, max);
   pinky.attach(pinkyPin, min, max);
   Serial.println("Starting");       //makes the hand relax all of the way
-  setOpen(); //set default position
+  handPosition(max,max,max,max,max);
   trigger = setTrigger();
 }
  
