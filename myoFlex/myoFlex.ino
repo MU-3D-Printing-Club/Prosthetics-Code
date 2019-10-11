@@ -41,46 +41,44 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
  
 // THIS PART OF THE CODE LOOPS CONTINIOUSLY
 void loop() {
-if(trigger(currentVoltage = analogRead(myoIn))){
-  state++;
-  state = state%5;
-  //Serial.println(currentVoltage);        //prints in the serial moniter
-  if(state == 1){
-    if(!setOpen()){
-        Serial.println("Failed");
-    }
-    else{
-      Serial.println("open");
-    }
-  }
-  else if(state == 2){
-      if(!setPoint()){
+  if(trigger(currentVoltage = analogRead(myoIn))){
+    state++;
+    state = state%5;
+    //Serial.println(currentVoltage);        //prints in the serial moniter
+    if(state == 1){
+      if(setOpen()){
+        Serial.println("open");        
+      }
+      else{
         Serial.println("Failed");
       }
-    else{
-      Serial.println("point");
     }
-  }
-  else if(state == 3){
-    if(!setPinch()){
-      Serial.println("Failed");
+    else if(state == 2){
+      if(setPoint()){
+        Serial.println("point");
+      }
+      else{
+        Serial.println("Failed");
+      }
     }
-    else{
-      Serial.println("pinch");
+    else if(state == 3){
+      if(setPinch()){
+        Serial.println("pinch");
+      }
+      else{
+        Serial.println("Failed");
+      }
     }
-  }
-  else {
-    if(state == 4){
-    if(!setFist()){
-      Serial.println("Failed");
+    else {
+      if(setFist()){
+        Serial.println("fist");
+      }
+      else{
+        Serial.println("Failed");
+      }
     }
-    else{
-      Serial.println("fist");
-    }
-  }
   }
 }
-
 int setTrigger(){
   float average = 0;
   do{
