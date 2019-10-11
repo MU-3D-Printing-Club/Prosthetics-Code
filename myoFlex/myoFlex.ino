@@ -87,9 +87,10 @@ int setTrigger(){
       Serial.print(j);
       Serial.print(" in the next 3 seconds");
       for(int i = 3; i != 0; i--){
-        delay(1000);
         Serial.println(i);
+        delay(1000);
       }
+      Serial.println("Reading");
       average = average + analogRead(myoIn);
     }
   } while(average < 300);
