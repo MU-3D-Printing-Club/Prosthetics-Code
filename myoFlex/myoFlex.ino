@@ -36,6 +36,7 @@ int setFist();
 void setup() {
 Serial.begin(9600);     //starts up serial communication between arduino and computer
   Serial.println("Starting");       //makes the hand relax all of the way
+  setOpen(); //set default position
   trigger = setTrigger();
 }
  
