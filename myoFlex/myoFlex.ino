@@ -82,12 +82,13 @@ void loop() {
 }
 int setTrigger(){
   float average = 0;
+  int i, j;
   do{
-    for(int j = 1; j <= 3; j++){
+    for(j = 1; j <= 3; j++){
       Serial.println("Reading impulse ");
       Serial.print(j);
       Serial.print(" in the next 3 seconds");
-      for(int i = 3; i != 0; i--){
+      for(i = 3; i != 0; i--){
         Serial.println(i);
         delay(1000);
       }
