@@ -84,15 +84,16 @@ if(trigger(currentVoltage = analogRead(myoIn))){
 
 int setTrigger(){
   float average = 0;
-
-  for(int j = 1; j <= 3; j++){
-    Serial.println("Reading impulse %d in next 3 seconds", j);
-    for(int i = 3; i != 0; i--){
-      delay(1000);
-      Serial.println("%d", i);
+  do{
+    for(int j = 1; j <= 3; j++){
+      Serial.println("Reading impulse %d in next 3 seconds", j);
+      for(int i = 3; i != 0; i--){
+        delay(1000);
+        Serial.println("%d", i);
+      }
+      average = average + analogRead(myoIn);
     }
-    average = average + analogRead(myoIn);
-  }
+  } while(average < 300);
   return (int)(average/3);
 }
 
