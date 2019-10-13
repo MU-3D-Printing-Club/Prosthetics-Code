@@ -13,9 +13,7 @@ Servo pinky;
 #define min 2000    //static integers of minimum and maximum servo extension
 #define max 1000
 
-//int min = 2000;
-//int max = 1000;
-int trigger = 600; //change later with new function
+int trigger = 600; //default value incase if all fails
 
 #define thumbPin 3    //these are the PWM pins where servos are connected
 #define pointerPin 5
@@ -23,7 +21,7 @@ int trigger = 600; //change later with new function
 #define ringPin 9
 #define pinkyPin 10
  
-int state = 1;
+int state = 1;    //sets default state to be open
 float currentVoltage=0;   //this is where to store each read from the myo
 #define threshold .4    //this is the percentage of the max read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
@@ -45,13 +43,14 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
   handPosition(max,max,max,max,max);
   trigger = setTrigger();
 }
- 
-// THIS PART OF THE CODE LOOPS CONTINIOUSLY
+
+//setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
+
 void loop() {
   Serial.println(analogRead(myoIn));
-  if(check(currentVoltage = analogRead(myoIn))){
-    state++;
-    state = state%4;
+  if(check(currentVoltage = analogRead(myoIn))){//collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+    state++; //increases our state
+    state = state%4; //ensoures our only values are between 0-3 and loops back if otherwise
     Serial.print("state is ");
     Serial.println(state);
     //Serial.println(currentVoltage);        //prints in the serial moniter
@@ -77,26 +76,31 @@ void loop() {
     }
   }
 }
+
+//the loop function will continously check the users input and assign it to currentVoltage, then it's verified through the check function to see if its higher than the set trigger value from setup, if so then it will switch between the four hand positions in a looping structure
+
 int setTrigger(){
   float average = 0;
   int i, j;
   do{
-    average = 0;
-    for(j = 1; j <= 3; j++){
+    average = 0;//resets collection value if it failed prior
+    for(j = 1; j <= 3; j++){//loops to collect the three impulses
       Serial.print("Reading impulse ");
       Serial.print(j);
       Serial.println(" in the next 3 seconds");
-      for(i = 3; i != 0; i--){
+      for(i = 3; i != 0; i--){//counts down 3 seconds
         Serial.println(i);
         delay(1000);
       }
       Serial.println("Reading");
-      average = average + analogRead(myoIn);
+      average = average + analogRead(myoIn);//adds up collected values with previous values
       Serial.println(average/3);
     }
-  } while((average/3) < 200);
-  return (int)(average/3);
+  } while((average/3) < 200);//if it's less than 200 than we reattempt collection
+  return (int)(average/3);//returns average upon success
 }
+
+//setTrigger collects 3 inputs by the user with a 3 second delay between each one. It calculates the average and if it's lower than 200, it's an assumed error and will reset the collection. Once completed it returns the average
 
 int check(int voltage){
   if(voltage > trigger){
@@ -104,6 +108,8 @@ int check(int voltage){
   }
   return 0;
 }
+
+//check collects the voltage, and if it's greater than the trigger value, will return 1 for true, else 0 for false
 
 void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pinkyPos){
   //function hand position takes in 5 integer inputs for each finger and moves the servos according to
@@ -113,12 +119,13 @@ void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pink
   middle.writeMicroseconds(middlePos);
   ring.writeMicroseconds(ringPos);
   pinky.writeMicroseconds(pinkyPos);
-  Serial.println("changing");
   delay(1000);       //this is so the servos have time to get to their set position
-  thumb.writeMicroseconds(thumb.readMicroseconds());
+  thumb.writeMicroseconds(thumb.readMicroseconds()); //adjusts servos to adjust desired position to actual position reached to avoid burnout
   pointer.writeMicroseconds(pointer.readMicroseconds());
   middle.writeMicroseconds(middle.readMicroseconds());
   ring.writeMicroseconds(ring.readMicroseconds());
   pinky.writeMicroseconds(pinky.readMicroseconds());
   delay(250);
 }
+
+//handPosition takes 5 integer values to be 
