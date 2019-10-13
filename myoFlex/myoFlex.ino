@@ -128,4 +128,4 @@ void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pink
   delay(250);
 }
 
-//handPosition takes 5 integer values to be 
+//handPosition takes 5 integer values to be set to each servo for the finger, with one second of time to adjust, their position is read and if not accurate, will adjust servo command to stay at the position
