@@ -80,27 +80,33 @@ void loop() {
 //the loop function will continously check the users input and assign it to currentVoltage, then it's verified through the check function to see if its higher than the set trigger value from setup, if so then it will switch between the four hand positions in a looping structure
 
 int setTrigger(){
-  float average = 0;
-  int i, j;
-  do{
-    average = 0;//resets collection value if it failed prior
-    for(j = 1; j <= 3; j++){//loops to collect the three impulses
-      Serial.print("Reading impulse ");
-      Serial.print(j);
-      Serial.println(" in the next 3 seconds");
-      for(i = 3; i != 0; i--){//counts down 3 seconds
-        Serial.println(i);
-        delay(1000);
-      }
-      Serial.println("Reading");
-      average = average + analogRead(myoIn);//adds up collected values with previous values
-      Serial.println(average/3);
-    }
-  } while((average/3) < 200);//if it's less than 200 than we reattempt collection
-  return (int)(average/3);//returns average upon success
-}
 
-//setTrigger collects 3 inputs by the user with a 3 second delay between each one. It calculates the average and if it's lower than 200, it's an assumed error and will reset the collection. Once completed it returns the average
+  float average;
+  do{
+    //Finds the max flex for a total of 3 trials
+    float sumMaxFlexOfTrials = 0;
+    
+    for(int j = 1; j <= 3; j++){  //loops to collect the three impulses
+      Serial.print("Reading max of Flex ");
+      Serial.print(j);
+      Serial.println(" reading in the next 3 seconds");
+      float maxRecordedFlex = 0;
+      for(int i = 3000; i != 0; i -= 200){  //records values every 1/5 of a second and keeps track of which reading was the max
+         
+        float currentReading = analogRead(myoIn);
+        if(currentReading > maxRecordedFlex)
+          maxRecordedFlex = currentReading;
+        delay(200);
+      }
+
+      sumMaxFlexOfTrials += maxRecordedFlex; //Adds the max of this trial to the sum of the maxes of all the trials
+    }
+
+    average = sumMaxFlexOfTrials/3;
+  } while(average < 200);//if it's less than 200 than we reattempt collection
+
+  return (int)(average);//returns average upon success
+}
 
 int check(int voltage){
   if(voltage > trigger){
