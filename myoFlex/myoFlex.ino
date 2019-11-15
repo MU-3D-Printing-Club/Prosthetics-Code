@@ -20,6 +20,7 @@ int trigger = 600; //default value incase if all fails
 #define middlePin 6
 #define ringPin 9
 #define pinkyPin 10
+
  
 int state = 1;    //sets default state to be open
 float currentVoltage=0;   //this is where to store each read from the myo
@@ -32,13 +33,14 @@ void handPosition(int,int,int,int,int);
  
 // THIS PART ONLY RUNS ONCE
 void setup() {
-Serial.begin(9600);     //starts up serial communication between arduino and computer
+  Serial.begin(9600);     //starts up serial communication between arduino and computer
   Serial.println("linking servos");
   thumb.attach(thumbPin, min, max);    //defines where the servos are and their max/mins
   pointer.attach(pointerPin, min, max);
   middle.attach(middlePin, min, max);
   ring.attach(ringPin, min, max);
   pinky.attach(pinkyPin, min, max);
+  
   Serial.println("Starting");       //makes the hand relax all of the way
   handPosition(max,max,max,max,max);
   trigger = setTrigger();
