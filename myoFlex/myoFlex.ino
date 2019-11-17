@@ -1,15 +1,15 @@
 //this code takes input from a myoelctric and toggles the hand between the contracted
 // and extended positions when there is a spike above a user-defined level
 // future projects will include running this code with low power
-
+ 
 #include <Servo.h>     //library used for servos
-
+ 
 Servo thumb;            //defines the name of the five servos and them as servo objects
 Servo pointer;
 Servo middle;
 Servo ring;
 Servo pinky;
-
+ 
 #define extendmin 2000    //static integers of extendminimum and extendmaximum servo extension
 #define extendmax 1000
 
@@ -24,7 +24,7 @@ int isLocked = 0; //0 is not locked
 #define pinkyPin 10
 
 #define overload 1028
-
+ 
 int state = 0;    //sets default state to be open
 #define threshold .4    //this is the percentage of the extendmax read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
@@ -34,7 +34,7 @@ int check(int);
 void collect(int *, int *, int *);
 void handPosition(int,int,int,int,int);
 void locked();
-
+ 
 // THIS PART ONLY RUNS ONCE
 void setup() {
 Serial.begin(9600);     //starts up serial communication between arduino and computer
@@ -97,28 +97,22 @@ void loop() {
   float average = 0;
   int i, j;
   do{
-    //Finds the max flex for a total of 3 trials
-    float sumMaxFlexOfTrials = 0;
-
-    for(int j = 1; j <= 3; j++){  //loops to collect the three impulses
-      Serial.print("Reading max of Flex ");
+    average = 0;//resets collection value if it failed prior
+    for(j = 1; j <= 3; j++){//loops to collect the three impulses
+      Serial.print("Reading impulse ");
       Serial.print(j);
-      Serial.println(" reading in the next 3 seconds");
-      float maxRecordedFlex = 0;
-      for(int i = 3000; i != 0; i -= 200){  //records values every 1/5 of a second and keeps track of which reading was the max
-
-        float currentReading = analogRead(myoIn);
-        if(currentReading > maxRecordedFlex)
-          maxRecordedFlex = currentReading;
-        delay(200);
+      Serial.println(" in the next 3 seconds");
+      for(i = 3; i != 0; i--){//counts down 3 seconds
+        Serial.println(i);
+        delay(1000);
       }
       Serial.println("Reading");
       average = average + analogRead(myoIn);//adds up collected values with previous values
       Serial.print("Total is:");
       Serial.println(average);
-
+      
     }
-
+    
       average = average/3;
       Serial.print("Average is:");
       Serial.println(average);
@@ -181,11 +175,7 @@ void collect(int * max1, int * max2, int * max3){
   }
 }
 
-    average = sumMaxFlexOfTrials/3;
-  } while(average < 200);//if it's less than 200 than we reattempt collection
-
-  return (int)(average);//returns average upon success
-}
+//setTrigger collects 3 inputs by the user with a 3 second delay between each one. It calculates the average and if it's lower than 200, it's an assumed error and will reset the collection. Once completed it returns the average
 
 int check(int voltage){
   if(voltage > trigger && voltage < overload){
@@ -210,7 +200,7 @@ void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pink
   ring.writeMicroseconds(ringPos);
   pinky.writeMicroseconds(pinkyPos);
   delay(200);
-  thumb.writeMicroseconds(thumbPos);
+  thumb.writeMicroseconds(thumbPos);  
   delay(1000);       //this is so the servos have time to get to their set position
   thumb.writeMicroseconds(thumb.readMicroseconds()); //adjusts servos to adjust desired position to actual position reached to avoid burnout
   pointer.writeMicroseconds(pointer.readMicroseconds());
