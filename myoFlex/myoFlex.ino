@@ -10,8 +10,8 @@ Servo middle;
 Servo ring;
 Servo pinky;
  
-#define min 2000    //static integers of minimum and maximum servo extension
-#define max 1000
+#define extendmin 2000    //static integers of extendminimum and extendmaximum servo extension
+#define extendmax 1000
 
 int trigger = 600; //default value incase if all fails
 
@@ -23,7 +23,7 @@ int trigger = 600; //default value incase if all fails
  
 int state = 1;    //sets default state to be open
 float currentVoltage=0;   //this is where to store each read from the myo
-#define threshold .4    //this is the percentage of the max read we use to define a flex
+#define threshold .4    //this is the percentage of the extendmax read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
 
 int setTrigger();
@@ -34,13 +34,13 @@ void handPosition(int,int,int,int,int);
 void setup() {
 Serial.begin(9600);     //starts up serial communication between arduino and computer
   Serial.println("linking servos");
-  thumb.attach(thumbPin, min, max);    //defines where the servos are and their max/mins
-  pointer.attach(pointerPin, min, max);
-  middle.attach(middlePin, min, max);
-  ring.attach(ringPin, min, max);
-  pinky.attach(pinkyPin, min, max);
+  thumb.attach(thumbPin, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
+  pointer.attach(pointerPin, extendmin, extendmax);
+  middle.attach(middlePin, extendmin, extendmax);
+  ring.attach(ringPin, extendmin, extendmax);
+  pinky.attach(pinkyPin, extendmin, extendmax);
   Serial.println("Starting");       //makes the hand relax all of the way
-  handPosition(max,max,max,max,max);
+  handPosition(extendmax,extendmax,extendmax,extendmax,extendmax);
   trigger = setTrigger();
 }
 
@@ -56,23 +56,23 @@ void loop() {
     //Serial.println(currentVoltage);        //prints in the serial moniter
     if(state == 0){
       Serial.println("Open");
-      handPosition(max,max,max,max,max);
+      handPosition(extendmax,extendmax,extendmax,extendmax,extendmax);
     }
     else if(state == 1){
       Serial.println("Point");
-      handPosition(max,min,max,max,max);
+      handPosition(extendmax,extendmin,extendmax,extendmax,extendmax);
     }
     else if(state == 2){
       Serial.println("Pinch");
-      handPosition(min,min,min,max,max);
+      handPosition(extendmin,extendmin,extendmin,extendmax,extendmax);
     }
     else if(state == 3){
       Serial.println("Fist");
-      handPosition(min,min,min,min,min);
+      handPosition(extendmin,extendmin,extendmin,extendmin,extendmin);
     }
     else {
       state = 1; //edgecase if logic fail
-      handPosition(max,max,max,max,max);
+      handPosition(extendmax,extendmax,extendmax,extendmax,extendmax);
     }
   }
 }
@@ -113,7 +113,7 @@ int check(int voltage){
 
 void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pinkyPos){
   //function hand position takes in 5 integer inputs for each finger and moves the servos according to
-  //each input. for the servos, maximum extension is 1000 and minimum (all the way in) is 2000.
+  //each input. for the servos, extendmaximum extension is 1000 and extendminimum (all the way in) is 2000.
   thumb.writeMicroseconds(thumbPos);   //this is a function from the servo.h library basically gives the pulse width
   pointer.writeMicroseconds(pointerPos);
   middle.writeMicroseconds(middlePos);
