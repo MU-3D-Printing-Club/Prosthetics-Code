@@ -15,6 +15,7 @@ Servo pinky;
 
 int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
+int isLocked = 0; //0 is not locked
 
 #define thumbPin 3    //these are the PWM pins where servos are connected
 #define pointerPin 5
@@ -24,7 +25,7 @@ int rotation = 2; //set to 4 for more opitons
 
 #define overload 1028
  
-int state = 1;    //sets default state to be open
+int state = 0;    //sets default state to be open
 #define threshold .4    //this is the percentage of the extendmax read we use to define a flex
 #define myoIn A1      //the pin where myo signal comes in
 
@@ -32,6 +33,7 @@ int setTrigger();
 int check(int);
 void collect(int *, int *, int *);
 void handPosition(int,int,int,int,int);
+void locked();
  
 // THIS PART ONLY RUNS ONCE
 void setup() {
@@ -42,6 +44,8 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
   middle.attach(middlePin, extendmin, extendmax);
   ring.attach(ringPin, extendmin, extendmax);
   pinky.attach(pinkyPin, extendmin, extendmax);
+  pinMode(2, INPUT);
+  attachInterrupt(digitalPinToInterrupt(2),locked, RISING);
   Serial.println("Starting");       //makes the hand relax all of the way
   handPosition(extendmax,extendmax,extendmax,extendmax,extendmax);
   Serial.println("Reading in 3");
@@ -58,7 +62,7 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
 void loop() {
   Serial.println(analogRead(myoIn));
   float currentVoltage=0;
-  if(check(currentVoltage = analogRead(myoIn))){//collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+  if(check(currentVoltage = analogRead(myoIn)) && isLocked == 0){//collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
     state++; //increases our state
     state = state%rotation; //ensoures our only values are between 0-3 and loops back if otherwise
     Serial.print("state is ");
@@ -181,6 +185,11 @@ int check(int voltage){
 }
 
 //check collects the voltage, and if it's greater than the trigger value, will return 1 for true, else 0 for false
+
+void locked(){
+  isLocked++;
+  isLocked = isLocked%2;
+}
 
 void handPosition(int thumbPos,int pointerPos,int middlePos,int ringPos,int pinkyPos){
   //function hand position takes in 5 integer inputs for each finger and moves the servos according to
