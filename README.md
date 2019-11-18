@@ -1,3 +1,3 @@
 # Prosthetics-Code
 
-Where people who are good at programming but also in the 3D Printing club work together.
+Where people who are moderately okay at programming but also in the 3D Printing club work together.
