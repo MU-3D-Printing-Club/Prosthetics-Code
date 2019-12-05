@@ -82,7 +82,7 @@ void loop() {
 
     if (check(currentVoltage = analogRead(MYO_PIN)) && isLocked == 0) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
 
-        state = (++state) % (PINCH+1); // increment through available state values
+        state = (++state) % (FIST+1); // increment through available state values
 
         Serial.print("state is ");
         Serial.println(state);
