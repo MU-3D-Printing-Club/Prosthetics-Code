@@ -17,17 +17,23 @@ int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
 int isLocked = 0; //0 is not locked
 
-#define thumbPin 3    //these are the PWM pins where servos are connected
-#define pointerPin 5
-#define middlePin 6
-#define ringPin 9
-#define pinkyPin 10
+enum pins
+{
+  THUMB_PIN = 3,
+  INDEX_PIN = 5,
+  MIDDLE_PIN = 6,
+  RING_PIN = 9,
+  PINKY_PIN = 10,
+  VBAT_PIN = A0,
+  MYO_PIN = A5,
+  LED_PIN = 11,
+  BUTTON_PIN = 7
+};
 
 #define overload 1028
  
 int state = 0;    //sets default state to be open
 #define threshold .4    //this is the percentage of the extendmax read we use to define a flex
-#define myoIn A1      //the pin where myo signal comes in
 
 int setTrigger();
 int check(int);
@@ -39,13 +45,13 @@ void locked();
 void setup() {
 Serial.begin(9600);     //starts up serial communication between arduino and computer
   Serial.println("linking servos");
-  thumb.attach(thumbPin, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
-  pointer.attach(pointerPin, extendmin, extendmax);
-  middle.attach(middlePin, extendmin, extendmax);
-  ring.attach(ringPin, extendmin, extendmax);
-  pinky.attach(pinkyPin, extendmin, extendmax);
-  pinMode(2, INPUT);
-  attachInterrupt(digitalPinToInterrupt(2),locked, RISING);
+  thumb.attach(THUMB_PIN, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
+  pointer.attach(INDEX_PIN, extendmin, extendmax);
+  middle.attach(MIDDLE_PIN, extendmin, extendmax);
+  ring.attach(RING_PIN, extendmin, extendmax);
+  pinky.attach(PINKY_PIN, extendmin, extendmax);
+  pinMode(BUTTON_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN),locked, RISING);
   Serial.println("Starting");       //makes the hand relax all of the way
   handPosition(extendmax,extendmax,extendmax,extendmax,extendmax);
   Serial.println("Reading in 3");
@@ -60,9 +66,9 @@ Serial.begin(9600);     //starts up serial communication between arduino and com
 //setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
 
 void loop() {
-  Serial.println(analogRead(myoIn));
+  Serial.println(analogRead(MYO_PIN));
   float currentVoltage=0;
-  if(check(currentVoltage = analogRead(myoIn)) && isLocked == 0){//collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+  if(check(currentVoltage = analogRead(MYO_PIN)) && isLocked == 0){//collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
     state++; //increases our state
     state = state%rotation; //ensoures our only values are between 0-3 and loops back if otherwise
     Serial.print("state is ");
@@ -156,9 +162,9 @@ int setTrigger(){
 }
 
 void collect(int * max1, int * max2, int * max3){
-  float prevVolt = analogRead(myoIn);
-  float currVolt = analogRead(myoIn);
-  float nextVolt = analogRead(myoIn);
+  float prevVolt = analogRead(MYO_PIN);
+  float currVolt = analogRead(MYO_PIN);
+  float nextVolt = analogRead(MYO_PIN);
   if(currVolt < overload && prevVolt < currVolt && currVolt > nextVolt){
     if(currVolt > *max1){
       *max1 = currVolt;
