@@ -21,20 +21,20 @@ int isLocked = 0; //0 is not locked
 
 enum pins
 {
-    THUMB_PIN = 3,
-    INDEX_PIN = 5,
-    MIDDLE_PIN = 6,
-    RING_PIN = 9,
-    PINKY_PIN = 10,
-    VBAT_PIN = A0,
-    MYO_PIN = A5,
-    LED_PIN = 11,
-    BUTTON_PIN = 7
+  THUMB_PIN = 3,
+  INDEX_PIN = 5,
+  MIDDLE_PIN = 6,
+  RING_PIN = 9,
+  PINKY_PIN = 10,
+  VBAT_PIN = A0,
+  MYO_PIN = A5,
+  LED_PIN = 11,
+  BUTTON_PIN = 7
 };
 
 enum hand_state
 {
-    OPEN, FIST, POINT, PINCH
+  OPEN, FIST, POINT, PINCH
 };
 
 Adafruit_NeoPixel led(1, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -51,72 +51,98 @@ void handPosition(int, int, int, int, int);
 void locked();
 void set_led();
 
+//wait 10 seconds then set led color for 1 second based on battery voltage
+ISR(TIMER3_OVF_vect)
+{
+  static int count = 0;
+
+  count = ++count % 2;
+
+  if (count == 0) {
+    analogRead(MYO_PIN);
+    led.setPixelColor(0, led.Color(20, 0, 0));
+  } else
+    led.setPixelColor(0, led.Color(0, 0, 0));
+
+  led.show();
+}
+
 // THIS PART ONLY RUNS ONCE
 void setup() {
-    Serial1.begin(9600);     // starts up serial communication between arduino and computer
 
-    Serial1.println("linking servos");
-    thumb.attach(THUMB_PIN, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
-    pointer.attach(INDEX_PIN, extendmin, extendmax);
-    middle.attach(MIDDLE_PIN, extendmin, extendmax);
-    ring.attach(RING_PIN, extendmin, extendmax);
-    pinky.attach(PINKY_PIN, extendmin, extendmax);
+  led.begin();
+  //put in normal mode because this is set somewhere else beforehand
+  TCCR3A = 0;
+  //set prescaler to 256
+  TCCR3B = 4;
 
-    pinMode(BUTTON_PIN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), locked, RISING);
+  //enable timer interupt on overflow
+  TIMSK3 = 1;
 
-    Serial1.println("Starting");       //makes the hand relax all of the way
-    handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
+  Serial1.begin(9600);     // starts up serial communication between arduino and computer
 
-    Serial1.println("Reading in 3");
-    delay(1000);
-    Serial1.println("Reading in 2");
-    delay(1000);
-    Serial1.println("Reading in 1");
-    delay(1000);
+  Serial1.println("linking servos");
+  thumb.attach(THUMB_PIN, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
+  pointer.attach(INDEX_PIN, extendmin, extendmax);
+  middle.attach(MIDDLE_PIN, extendmin, extendmax);
+  ring.attach(RING_PIN, extendmin, extendmax);
+  pinky.attach(PINKY_PIN, extendmin, extendmax);
 
-    trigger = setTrigger();
+  pinMode(BUTTON_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), locked, RISING);
+
+  Serial1.println("Starting");       //makes the hand relax all of the way
+  handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
+
+  Serial1.println("Reading in 3");
+  delay(1000);
+  Serial1.println("Reading in 2");
+  delay(1000);
+  Serial1.println("Reading in 1");
+  delay(1000);
+
+  trigger = setTrigger();
 }
 
 //setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
 
 void loop() {
-    Serial1.println(analogRead(MYO_PIN));
+  //Serial1.println(analogRead(MYO_PIN));
 
-    float currentVoltage = 0;
+  float currentVoltage = 0;
 
-    if (check(currentVoltage = analogRead(MYO_PIN)) && isLocked == 0) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+  if (check(currentVoltage = analogRead(MYO_PIN)) && isLocked == 0) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
 
-        state = (++state) % (FIST+1); // increment through available state values
+    state = (++state) % (FIST + 1); // increment through available state values
 
-        Serial1.print("state is ");
-        Serial1.println(state);
+    Serial1.print("state is ");
+    Serial1.println(state);
 
-        //Serial1.println(currentVoltage); // prints in the Serial1 moniter
+    //Serial1.println(currentVoltage); // prints in the Serial1 moniter
 
-        switch (state) {
-        case OPEN:
-            Serial1.println("Open");
-            handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
-            break;
-        case FIST:
-            Serial1.println("Fist");
-            handPosition(extendmin, extendmin, extendmin, extendmin, extendmin);
-            break;
-        case POINT:
-            Serial1.println("Point");
-            handPosition(extendmax, extendmin, extendmax, extendmax, extendmax);
-            break;
-        case PINCH:
-            Serial1.println("Pinch");
-            handPosition(extendmin, extendmin, extendmin, extendmax, extendmax);
-            break;
-        default:
-            state = FIST; //edgecase if logic fail
-            handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
-            break;
-        }
+    switch (state) {
+      case OPEN:
+        Serial1.println("Open");
+        handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
+        break;
+      case FIST:
+        Serial1.println("Fist");
+        handPosition(extendmin, extendmin, extendmin, extendmin, extendmin);
+        break;
+      case POINT:
+        Serial1.println("Point");
+        handPosition(extendmax, extendmin, extendmax, extendmax, extendmax);
+        break;
+      case PINCH:
+        Serial1.println("Pinch");
+        handPosition(extendmin, extendmin, extendmin, extendmax, extendmax);
+        break;
+      default:
+        state = FIST; //edgecase if logic fail
+        handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
+        break;
     }
+  }
 }
 
 //the loop function will continously check the users input and assign it to currentVoltage, then it's verified through the check function to see if its higher than the set trigger value from setup, if so then it will switch between the four hand positions in a looping structure
@@ -150,107 +176,92 @@ void loop() {
 
 
 int setTrigger() {
-    float average = 0;
-    int i, j;
-    int max1, max2, max3;
-    int loopcount, starttime, endtime;
-    do {
-        average = 0;//resets collection value if it failed prior
-        max1 = 0;
-        max2 = 0;
-        max3 = 0;
-        loopcount = 0;
-        starttime = millis();
-        endtime = starttime;
-        while ((endtime - starttime) < 3000) // do this loop for about 1 second
-        {
-            collect(&max1, &max2, &max3);
-            loopcount = loopcount + 1;
-            endtime = millis();
-        }
-        average = (max1 + max2 + max3) / 3;
-        Serial1.println("max1");
-        Serial1.print(max1);
-        Serial1.println("max2");
-        Serial1.print(max2);
-        Serial1.println("max3");
-        Serial1.print(max3);
-        Serial1.println("average");
-        Serial1.println(average);
-        Serial1.println("loop");
-        Serial1.println(loopcount);
-    } while ((average) < 200); //if it's less than 200 than we reattempt collection
-    return (int)(average);//returns average upon success
+  float average = 0;
+  int i, j;
+  int max1, max2, max3;
+  int loopcount, starttime, endtime;
+  do {
+    average = 0;//resets collection value if it failed prior
+    max1 = 0;
+    max2 = 0;
+    max3 = 0;
+    loopcount = 0;
+    starttime = millis();
+    endtime = starttime;
+    while ((endtime - starttime) < 3000) // do this loop for about 1 second
+    {
+      collect(&max1, &max2, &max3);
+      loopcount = loopcount + 1;
+      endtime = millis();
+    }
+    average = (max1 + max2 + max3) / 3;
+    Serial1.println("max1");
+    Serial1.print(max1);
+    Serial1.println("max2");
+    Serial1.print(max2);
+    Serial1.println("max3");
+    Serial1.print(max3);
+    Serial1.println("average");
+    Serial1.println(average);
+    Serial1.println("loop");
+    Serial1.println(loopcount);
+  } while ((average) < 200); //if it's less than 200 than we reattempt collection
+  return (int)(average);//returns average upon success
 }
 
 void collect(int * max1, int * max2, int * max3) {
-    float prevVolt = analogRead(MYO_PIN);
-    float currVolt = analogRead(MYO_PIN);
-    float nextVolt = analogRead(MYO_PIN);
-    if (currVolt < overload && prevVolt < currVolt && currVolt > nextVolt) {
-        if (currVolt > *max1) {
-            *max1 = currVolt;
-            return;
-        }
-        else if (currVolt > *max2) {
-            *max2 = currVolt;
-            return;
-        }
-        else if (currVolt > *max3) {
-            *max3 = currVolt;
-            return;
-        }
+  float prevVolt = analogRead(MYO_PIN);
+  float currVolt = analogRead(MYO_PIN);
+  float nextVolt = analogRead(MYO_PIN);
+  if (currVolt < overload && prevVolt < currVolt && currVolt > nextVolt) {
+    if (currVolt > *max1) {
+      *max1 = currVolt;
+      return;
     }
+    else if (currVolt > *max2) {
+      *max2 = currVolt;
+      return;
+    }
+    else if (currVolt > *max3) {
+      *max3 = currVolt;
+      return;
+    }
+  }
 }
 
 //setTrigger collects 3 inputs by the user with a 3 second delay between each one. It calculates the average and if it's lower than 200, it's an assumed error and will reset the collection. Once completed it returns the average
 
 int check(int voltage) {
-    if (voltage > trigger && voltage < overload) {
-        return 1;
-    }
-    return 0;
+  if (voltage > trigger && voltage < overload) {
+    return 1;
+  }
+  return 0;
 }
 
 //check collects the voltage, and if it's greater than the trigger value, will return 1 for true, else 0 for false
 
 void locked() {
-    isLocked++;
-    isLocked = isLocked % 2;
+  isLocked++;
+  isLocked = isLocked % 2;
 }
 
 void handPosition(int thumbPos, int pointerPos, int middlePos, int ringPos, int pinkyPos) {
-    //function hand position takes in 5 integer inputs for each finger and moves the servos according to
-    //each input. for the servos, extendmaximum extension is 1000 and extendminimum (all the way in) is 2000.
-    //this is a function from the servo.h library basically gives the pulse width
-    pointer.writeMicroseconds(pointerPos);
-    middle.writeMicroseconds(middlePos);
-    ring.writeMicroseconds(ringPos);
-    pinky.writeMicroseconds(pinkyPos);
-    delay(200);
-    thumb.writeMicroseconds(thumbPos);
-    delay(1000);       //this is so the servos have time to get to their set position
-    thumb.writeMicroseconds(thumb.readMicroseconds()); //adjusts servos to adjust desired position to actual position reached to avoid burnout
-    pointer.writeMicroseconds(pointer.readMicroseconds());
-    middle.writeMicroseconds(middle.readMicroseconds());
-    ring.writeMicroseconds(ring.readMicroseconds());
-    pinky.writeMicroseconds(pinky.readMicroseconds());
-    delay(250);
+  //function hand position takes in 5 integer inputs for each finger and moves the servos according to
+  //each input. for the servos, extendmaximum extension is 1000 and extendminimum (all the way in) is 2000.
+  //this is a function from the servo.h library basically gives the pulse width
+  pointer.writeMicroseconds(pointerPos);
+  middle.writeMicroseconds(middlePos);
+  ring.writeMicroseconds(ringPos);
+  pinky.writeMicroseconds(pinkyPos);
+  delay(200);
+  thumb.writeMicroseconds(thumbPos);
+  delay(1000);       //this is so the servos have time to get to their set position
+  thumb.writeMicroseconds(thumb.readMicroseconds()); //adjusts servos to adjust desired position to actual position reached to avoid burnout
+  pointer.writeMicroseconds(pointer.readMicroseconds());
+  middle.writeMicroseconds(middle.readMicroseconds());
+  ring.writeMicroseconds(ring.readMicroseconds());
+  pinky.writeMicroseconds(pinky.readMicroseconds());
+  delay(250);
 }
 
 //handPosition takes 5 integer values to be set to each servo for the finger, with one second of time to adjust, their position is read and if not accurate, will adjust servo command to stay at the position
-
-void set_led()
-{
-   static char count = 0;
-
-   count = ++count % 10;
-
-   if(count == 0) {
-      analogRead(MYO_PIN);
-      led.setPixelColor(0, led.Color(100,0,0));
-   } else
-     led.setPixelColor(0, led.Color(0,0,0));
-
-     led.show();
-}
