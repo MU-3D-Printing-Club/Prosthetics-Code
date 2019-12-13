@@ -57,10 +57,12 @@ ISR(TIMER3_OVF_vect)
   static int count = 0;
 
   count = ++count % 2;
-
+ 
   if (count == 0) {
-    analogRead(MYO_PIN);
-    led.setPixelColor(0, led.Color(20, 0, 0));
+    int light_level = (analogRead(VBAT_PIN) - 614) / 10;
+    light_level = light_level > 20 ? 20 : light_level;
+    light_level = light_level < 0 ? 0 : light_level;
+    led.setPixelColor(0, led.Color(light_level, 20 - light_level, 0));
   } else
     led.setPixelColor(0, led.Color(0, 0, 0));
 
