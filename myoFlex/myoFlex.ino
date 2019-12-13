@@ -2,6 +2,7 @@
 // and extended positions when there is a spike above a user-defined level
 // future projects will include running this code with low power
 
+#include <Adafruit_NeoPixel.h>
 #include <Servo.h>     //library used for servos
 
 Servo thumb;            //defines the name of the five servos and them as servo objects
@@ -9,6 +10,7 @@ Servo pointer;
 Servo middle;
 Servo ring;
 Servo pinky;
+
 
 #define extendmin 2000    //static integers of extendminimum and extendmaximum servo extension
 #define extendmax 1000
@@ -35,6 +37,8 @@ enum hand_state
     OPEN, FIST, POINT, PINCH
 };
 
+Adafruit_NeoPixel led(1, LED_PIN, NEO_GRB + NEO_KHZ800);
+
 #define overload 1028
 
 int state = OPEN;    // sets default state to be open
@@ -45,6 +49,7 @@ int check(int);
 void collect(int *, int *, int *);
 void handPosition(int, int, int, int, int);
 void locked();
+void set_led();
 
 // THIS PART ONLY RUNS ONCE
 void setup() {
@@ -234,3 +239,18 @@ void handPosition(int thumbPos, int pointerPos, int middlePos, int ringPos, int 
 }
 
 //handPosition takes 5 integer values to be set to each servo for the finger, with one second of time to adjust, their position is read and if not accurate, will adjust servo command to stay at the position
+
+void set_led()
+{
+   static char count = 0;
+
+   count = ++count % 10;
+
+   if(count == 0) {
+      analogRead(MYO_PIN);
+      led.setPixelColor(0, led.Color(100,0,0));
+   } else
+     led.setPixelColor(0, led.Color(0,0,0));
+
+     led.show();
+}
