@@ -48,9 +48,9 @@ void locked();
 
 // THIS PART ONLY RUNS ONCE
 void setup() {
-    Serial.begin(9600);     // starts up serial communication between arduino and computer
+    Serial1.begin(9600);     // starts up serial communication between arduino and computer
 
-    Serial.println("linking servos");
+    Serial1.println("linking servos");
     thumb.attach(THUMB_PIN, extendmin, extendmax);    //defines where the servos are and their extendmax/extendmins
     pointer.attach(INDEX_PIN, extendmin, extendmax);
     middle.attach(MIDDLE_PIN, extendmin, extendmax);
@@ -60,14 +60,14 @@ void setup() {
     pinMode(BUTTON_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), locked, RISING);
 
-    Serial.println("Starting");       //makes the hand relax all of the way
+    Serial1.println("Starting");       //makes the hand relax all of the way
     handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
 
-    Serial.println("Reading in 3");
+    Serial1.println("Reading in 3");
     delay(1000);
-    Serial.println("Reading in 2");
+    Serial1.println("Reading in 2");
     delay(1000);
-    Serial.println("Reading in 1");
+    Serial1.println("Reading in 1");
     delay(1000);
 
     trigger = setTrigger();
@@ -76,7 +76,7 @@ void setup() {
 //setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
 
 void loop() {
-    Serial.println(analogRead(MYO_PIN));
+    Serial1.println(analogRead(MYO_PIN));
 
     float currentVoltage = 0;
 
@@ -84,26 +84,26 @@ void loop() {
 
         state = (++state) % (FIST+1); // increment through available state values
 
-        Serial.print("state is ");
-        Serial.println(state);
+        Serial1.print("state is ");
+        Serial1.println(state);
 
-        //Serial.println(currentVoltage); // prints in the serial moniter
+        //Serial1.println(currentVoltage); // prints in the Serial1 moniter
 
         switch (state) {
         case OPEN:
-            Serial.println("Open");
+            Serial1.println("Open");
             handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
             break;
         case FIST:
-            Serial.println("Fist");
+            Serial1.println("Fist");
             handPosition(extendmin, extendmin, extendmin, extendmin, extendmin);
             break;
         case POINT:
-            Serial.println("Point");
+            Serial1.println("Point");
             handPosition(extendmax, extendmin, extendmax, extendmax, extendmax);
             break;
         case PINCH:
-            Serial.println("Pinch");
+            Serial1.println("Pinch");
             handPosition(extendmin, extendmin, extendmin, extendmax, extendmax);
             break;
         default:
@@ -122,23 +122,23 @@ void loop() {
   do{
     average = 0;//resets collection value if it failed prior
     for(j = 1; j <= 3; j++){//loops to collect the three impulses
-      Serial.print("Reading impulse ");
-      Serial.print(j);
-      Serial.println(" in the next 3 seconds");
+      Serial1.print("Reading impulse ");
+      Serial1.print(j);
+      Serial1.println(" in the next 3 seconds");
       for(i = 3; i != 0; i--){//counts down 3 seconds
-        Serial.println(i);
+        Serial1.println(i);
         delay(1000);
       }
-      Serial.println("Reading");
+      Serial1.println("Reading");
       average = average + analogRead(myoIn);//adds up collected values with previous values
-      Serial.print("Total is:");
-      Serial.println(average);
+      Serial1.print("Total is:");
+      Serial1.println(average);
 
     }
 
       average = average/3;
-      Serial.print("Average is:");
-      Serial.println(average);
+      Serial1.print("Average is:");
+      Serial1.println(average);
   } while((average) < 200);//if it's less than 200 than we reattempt collection
   return (int)(average);//returns average upon success
   }*/
@@ -164,16 +164,16 @@ int setTrigger() {
             endtime = millis();
         }
         average = (max1 + max2 + max3) / 3;
-        Serial.println("max1");
-        Serial.print(max1);
-        Serial.println("max2");
-        Serial.print(max2);
-        Serial.println("max3");
-        Serial.print(max3);
-        Serial.println("average");
-        Serial.println(average);
-        Serial.println("loop");
-        Serial.println(loopcount);
+        Serial1.println("max1");
+        Serial1.print(max1);
+        Serial1.println("max2");
+        Serial1.print(max2);
+        Serial1.println("max3");
+        Serial1.print(max3);
+        Serial1.println("average");
+        Serial1.println(average);
+        Serial1.println("loop");
+        Serial1.println(loopcount);
     } while ((average) < 200); //if it's less than 200 than we reattempt collection
     return (int)(average);//returns average upon success
 }

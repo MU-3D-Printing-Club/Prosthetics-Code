@@ -16,48 +16,56 @@ char inString = 'a';
 #define actualMin 2000
 #define min 2000
 
+void bat() {
+  Serial1.println(analogRead(A0)/(1024.0));
+}
+
 void setup() {
-  Serial.begin(9600);
+  Serial1.begin(9600);
   thumb.attach(thumbPin, actualMin, max);
   pointer.attach(pointerPin, actualMin, max);
   middle.attach(middlePin, actualMin, max);
   ring.attach(ringPin, actualMin, max);
   pinky.attach(pinkyPin, actualMin, max);
-  Serial.println("Begin");
+  bat();
+  Serial1.println("Begin");
   palm();
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    command = Serial.read();
+  bat();
+  fist();
+  palm();
+  if (Serial1.available() > 0) {
+    command = Serial1.read();
     switch (command) {
       case 'f':
         fist();
-        Serial.println(command);
+        Serial1.println(command);
         break;
       case 'p':
         palm();
-        Serial.println(command);
+        Serial1.println(command);
         break;
       case 'm':
         mid();
-        Serial.println(command);
+        Serial1.println(command);
         break;
       case 't':
         thumbsUp();
-        Serial.println(command);
+        Serial1.println(command);
         break;
       case 'h':
         hangTen();
-        Serial.println(command);
+        Serial1.println(command);
         break;
         case 's':
         handShake(max+500);
-        Serial.println(command);
+        Serial1.println(command);
         break;
         case 'b':
         showOff();
-        Serial.println(command);
+        Serial1.println(command);
         break;
     }
   }
@@ -71,6 +79,7 @@ void fist()
   middle.writeMicroseconds(min);
   ring.writeMicroseconds(min);
   pinky.writeMicroseconds(min);
+  
   delay(700);
   thumb.writeMicroseconds(min);
   delay(1000);
