@@ -19,6 +19,7 @@ int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
 int isLocked = 0; //0 is not locked
 bool isIniting = true;
+bool battery_low = false;
 
 enum pins
 {
@@ -70,6 +71,8 @@ ISR(TIMER3_OVF_vect)
       light_level = light_level > 20 ? 20 : light_level;
       light_level = light_level < 0 ? 0 : light_level;
       led.setPixelColor(0, 20 - light_level, light_level, 0);
+
+      battery_low = light_level < 2;
 
       Serial1.print("Battery Read: ");
       Serial1.println(light_level);
@@ -127,7 +130,10 @@ void loop() {
 
   float currentVoltage = 0;
 
-  if (check(currentVoltage = analogRead(MYO_PIN)) && isLocked == 0) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+  if (battery_low) // double check with JD if this is something we want
+    handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
+
+  if (!battery_low && !isLocked && check(currentVoltage = analogRead(MYO_PIN))) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
 
     state = (++state) % (FIST + 1); // increment through available state values
 
