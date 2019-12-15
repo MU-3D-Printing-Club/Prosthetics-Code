@@ -38,7 +38,7 @@ enum hand_state
   OPEN, FIST, POINT, PINCH
 };
 
-Adafruit_NeoPixel led(1, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel led(1, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 #define overload 1028
 
@@ -69,7 +69,7 @@ ISR(TIMER3_OVF_vect)
       int light_level = (analogRead(VBAT_PIN) - 614) / 10;
       light_level = light_level > 20 ? 20 : light_level;
       light_level = light_level < 0 ? 0 : light_level;
-      led.setPixelColor(0, led.Color(light_level, 20 - light_level, 0));
+      led.setPixelColor(0, 20 - light_level, light_level, 0);
 
       Serial1.print("Battery Read: ");
       Serial1.println(light_level);
@@ -82,12 +82,15 @@ ISR(TIMER3_OVF_vect)
 // THIS PART ONLY RUNS ONCE
 void setup() {
   isIniting = true;
+
   led.begin();
+  led.clear(); //make sure led is off on startup because it will be a super bright blue otherwise
+  led.show();
+
   //put in normal mode because this is set somewhere else beforehand
   TCCR3A = 0;
   //set prescaler to 64
   TCCR3B = 3;
-
   //enable timer interupt on overflow
   TIMSK3 = 1;
 
