@@ -17,7 +17,7 @@ Servo pinky;
 
 int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
-int isLocked = 0; //0 is not locked
+bool isLocked = false; //0 is not locked
 bool isIniting = true;
 bool battery_low = false;
 
@@ -47,7 +47,7 @@ int state = OPEN;    // sets default state to be open
 #define threshold .4    // this is the percentage of the extendmax read we use to define a flex
 
 int setTrigger();
-int check(int);
+bool check(int);
 void collect(int *, int *, int *);
 void handPosition(int, int, int, int, int);
 void locked();
@@ -56,7 +56,7 @@ void set_led();
 //wait 10 seconds then set led color for 1 second based on battery voltage
 ISR(TIMER3_OVF_vect)
 {
-  static int count = -1;
+  static char count = -1;
 
   if (isIniting) {
     count = ++count % 4;
@@ -253,21 +253,24 @@ void collect(int * max1, int * max2, int * max3) {
 
 //setTrigger collects 3 inputs by the user with a 3 second delay between each one. It calculates the average and if it's lower than 200, it's an assumed error and will reset the collection. Once completed it returns the average
 
-int check(int voltage) {
-  if (voltage > trigger && voltage < overload) {
-    return 1;
-  }
-  return 0;
+bool check(int voltage) {
+  return voltage > trigger && voltage < overload;
 }
 
 //check collects the voltage, and if it's greater than the trigger value, will return 1 for true, else 0 for false
 
 void locked() {
-  isLocked++;
-  isLocked = isLocked % 2;
-  Serial1.print("Button State: ");
-  Serial1.println(isLocked);
-  delay(500);
+  static unsigned long last_lock_time = 0;
+
+  if (last_lock_time > millis()) // if the last lock time is in the future, there probably was an overflow so we should reset
+    last_lock_time = 0;
+
+  if (millis() - last_lock_time > 1000) { // only change state once a second to prevent button bouncing issues
+    last_lock_time = millis();
+    isLocked = !isLocked;
+    Serial1.print("Button State: ");
+    Serial1.println(isLocked);
+  }
 }
 
 void handPosition(int thumbPos, int pointerPos, int middlePos, int ringPos, int pinkyPos) {
