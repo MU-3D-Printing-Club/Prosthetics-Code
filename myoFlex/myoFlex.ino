@@ -18,6 +18,7 @@ Servo pinky;
 int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
 int isLocked = 0; //0 is not locked
+bool isIniting = true;
 
 enum pins
 {
@@ -54,29 +55,38 @@ void set_led();
 //wait 10 seconds then set led color for 1 second based on battery voltage
 ISR(TIMER3_OVF_vect)
 {
-  static int count = 0;
+  static int count = -1;
 
-  count = ++count % 2;
- 
-  if (count == 0) {
-    int light_level = (analogRead(VBAT_PIN) - 614) / 10;
-    light_level = light_level > 20 ? 20 : light_level;
-    light_level = light_level < 0 ? 0 : light_level;
-    led.setPixelColor(0, led.Color(light_level, 20 - light_level, 0));
-  } else
-    led.setPixelColor(0, led.Color(0, 0, 0));
+  if (isIniting) {
+    count = ++count % 4;
+    if (count < 2)
+      led.setPixelColor(0, led.Color(0, 20, 20));
+    else
+      led.setPixelColor(0, led.Color(0, 0, 0));
+  } else {
+    count = ++count % 40;
+    if (count < 4) {
+      int light_level = (analogRead(VBAT_PIN) - 614) / 10;
+      light_level = light_level > 20 ? 20 : light_level;
+      light_level = light_level < 0 ? 0 : light_level;
+      led.setPixelColor(0, led.Color(light_level, 20 - light_level, 0));
 
+      Serial1.print("Battery Read: ");
+      Serial1.println(light_level);
+    } else
+      led.setPixelColor(0, led.Color(0, 0, 0));
+  }
   led.show();
 }
 
 // THIS PART ONLY RUNS ONCE
 void setup() {
-
+  isIniting = true;
   led.begin();
   //put in normal mode because this is set somewhere else beforehand
   TCCR3A = 0;
-  //set prescaler to 256
-  TCCR3B = 4;
+  //set prescaler to 64
+  TCCR3B = 3;
 
   //enable timer interupt on overflow
   TIMSK3 = 1;
@@ -90,8 +100,8 @@ void setup() {
   ring.attach(RING_PIN, extendmin, extendmax);
   pinky.attach(PINKY_PIN, extendmin, extendmax);
 
-  pinMode(BUTTON_PIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), locked, RISING);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), locked, FALLING);
 
   Serial1.println("Starting");       //makes the hand relax all of the way
   handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
@@ -104,6 +114,7 @@ void setup() {
   delay(1000);
 
   trigger = setTrigger();
+  isIniting = false;
 }
 
 //setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
@@ -245,6 +256,9 @@ int check(int voltage) {
 void locked() {
   isLocked++;
   isLocked = isLocked % 2;
+  Serial1.print("Button State: ");
+  Serial1.println(isLocked);
+  delay(500);
 }
 
 void handPosition(int thumbPos, int pointerPos, int middlePos, int ringPos, int pinkyPos) {
