@@ -61,11 +61,12 @@ ISR(TIMER3_OVF_vect)
   if (isIniting) {
     count = ++count % 4;
     if (count < 2)
-      led.setPixelColor(0, led.Color(0, 20, 20));
+      led.setPixelColor(0, 0, 0, 20);
     else
-      led.setPixelColor(0, led.Color(0, 0, 0));
+      led.setPixelColor(0, 0, 0, 0);
   } else {
-    count = ++count % 40;
+    count = ++count % 40; // 0.1hz real
+    //count = ++count % 8; // 1hz test
     if (count < 4) {
       int light_level = (analogRead(VBAT_PIN) - 614) / 10;
       light_level = light_level > 20 ? 20 : light_level;
@@ -76,8 +77,10 @@ ISR(TIMER3_OVF_vect)
 
       Serial1.print("Battery Read: ");
       Serial1.println(light_level);
+      Serial1.print("Voltage: ");
+      Serial1.println(analogRead(VBAT_PIN) * 0.0049);
     } else
-      led.setPixelColor(0, led.Color(0, 0, 0));
+      led.setPixelColor(0, 0, 0, 0);
   }
   led.show();
 }
