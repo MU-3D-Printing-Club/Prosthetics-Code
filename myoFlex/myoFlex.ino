@@ -19,7 +19,6 @@ int trigger = 600; //default value incase if all fails
 int rotation = 2; //set to 4 for more opitons
 bool isLocked = false; //0 is not locked
 bool isIniting = true;
-bool battery_low = false;
 
 enum pins
 {
@@ -68,17 +67,20 @@ ISR(TIMER3_OVF_vect)
     count = ++count % 40; // 0.1hz real
     //count = ++count % 8; // 1hz test
     if (count < 4) {
-      int light_level = (analogRead(VBAT_PIN) - 614) / 10;
-      light_level = light_level > 20 ? 20 : light_level;
-      light_level = light_level < 0 ? 0 : light_level;
-      led.setPixelColor(0, 20 - light_level, light_level, 0);
+      const float battery_voltage = analogRead(VBAT_PIN) * 0.0049; //not reading reliably
+      //const float battery_voltage = 2.5; test code
 
-      battery_low = light_level < 2;
+      const float normalized = battery_voltage - 3.0;
 
-      Serial1.print("Battery Read: ");
-      Serial1.println(light_level);
-      Serial1.print("Voltage: ");
-      Serial1.println(analogRead(VBAT_PIN) * 0.0049);
+      float light_level = 20.0 * normalized;
+
+      light_level = light_level < 0.0 ? 0.0 : light_level;
+      light_level = light_level > 20.0 ? 20.0 : light_level;
+
+      led.setPixelColor(0, 20.0 - light_level, light_level, 0);
+
+      Serial1.print("Battery Voltage: ");
+      Serial1.println(battery_voltage);
     } else
       led.setPixelColor(0, 0, 0, 0);
   }
@@ -129,21 +131,17 @@ void setup() {
 //setup starts by linking the Servo objects to each pin and detailing the limits per each argument. Then it opens the hand for a default position and will call the setTrigger function. Once it's collected, the setup is complete
 
 void loop() {
-  //Serial1.println(analogRead(MYO_PIN));
-
   float currentVoltage = 0;
 
-  if (battery_low) // double check with JD if this is something we want
-    handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
-
-  if (!battery_low && !isLocked && check(currentVoltage = analogRead(MYO_PIN))) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
+  if (!isLocked && check(currentVoltage = analogRead(MYO_PIN))) { // collects voltage, then assigns to currentVoltage, then passes currentVoltage to check function, then checks the check return value to see if it's higher than trigger value
 
     state = (++state) % (FIST + 1); // increment through available state values
 
     Serial1.print("state is ");
     Serial1.println(state);
 
-    //Serial1.println(currentVoltage); // prints in the Serial1 moniter
+    Serial1.print("myo voltage is: ");
+    Serial1.println(currentVoltage); // prints in the Serial1 moniter
 
     switch (state) {
       case OPEN:
@@ -163,7 +161,7 @@ void loop() {
         handPosition(extendmin, extendmin, extendmin, extendmax, extendmax);
         break;
       default:
-        state = FIST; //edgecase if logic fail
+        state = OPEN; //edgecase if logic fail
         handPosition(extendmax, extendmax, extendmax, extendmax, extendmax);
         break;
     }
