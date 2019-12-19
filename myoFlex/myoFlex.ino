@@ -22,11 +22,11 @@ bool isIniting = true;
 
 enum pins
 {
-  THUMB_PIN = 3,
+  THUMB_PIN = 10,
   INDEX_PIN = 5,
   MIDDLE_PIN = 6,
   RING_PIN = 9,
-  PINKY_PIN = 10,
+  PINKY_PIN = 3,
   VBAT_PIN = A0,
   MYO_PIN = A5,
   LED_PIN = 11,
